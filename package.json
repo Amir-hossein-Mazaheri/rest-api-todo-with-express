@@ -4,15 +4,20 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon app.js"
+    "start:dev": "nodemon app.js",
+    "start": "node app.js"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "express-validator": "^6.14.2",
+    "http-status-code": "^2.1.0",
+    "jose": "^4.9.0",
     "mongodb": "^4.9.0",
-    "mongoose": "^6.5.2"
+    "mongoose": "^6.5.2",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "@types/node": "^18.7.8",
