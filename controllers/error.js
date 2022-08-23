@@ -7,9 +7,13 @@ const handle404 = (req, res, next) => {
 };
 
 const handle500 = (err, req, res, next) => {
-  res.status(500).json({
-    message: "Something happened, please try again.",
-    error: err.message,
+  const errMessage = err.isArray ? JSON.parse(err.message) : err.message;
+  const statusCode = err.statusCode || 500;
+  const reason = err.reason || "Something happened, please try again.";
+
+  res.status(statusCode).json({
+    message: reason,
+    error: errMessage,
   });
 
   next();
