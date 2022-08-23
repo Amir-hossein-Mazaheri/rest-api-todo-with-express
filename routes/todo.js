@@ -12,6 +12,6 @@ router.get("/", retrieveTodos);
 
 router.post("/", createTodo);
 
-router.post("/:todoId", retrieveSingleTodo);
+router.get("/:todoId", retrieveSingleTodo);
 
 module.exports = router;

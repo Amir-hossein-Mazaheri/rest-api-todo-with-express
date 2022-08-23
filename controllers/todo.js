@@ -1,4 +1,5 @@
 const Todo = require("../models/Todo");
+const CustomError = require("../utils/CustomError");
 
 const TODOS_PER_PAGE = 10;
 
@@ -12,7 +13,7 @@ const retrieveTodos = async (req, res, next) => {
     const hasPrev = page !== 1;
 
     if (page > totalPages) {
-      throw new Error("This page index doesn't exists.");
+      throw new CustomError("This page index doesn't exists.", 400);
     }
 
     const todos = await Todo.find()
@@ -25,9 +26,6 @@ const retrieveTodos = async (req, res, next) => {
       `${req.protocol}://${req.get("host")}${
         req.originalUrl.split("?")[0]
       }?page=${isPrev ? page - 1 : page + 1}`;
-
-    console.log(generateLink(false));
-    console.log(generateLink(true));
 
     res.json({
       count: todosCount,
@@ -65,8 +63,23 @@ const createTodo = async (req, res, next) => {
   }
 };
 
-const retrieveSingleTodo = async (req, res) => {
+const retrieveSingleTodo = async (req, res, next) => {
   const { todoId } = req.params;
+
+  try {
+    const todo = await Todo.findById(todoId).select(
+      "_id title description isDone isRemoved creationDate"
+    );
+    const { isRemoved, ...rest } = todo._doc;
+
+    if (isRemoved) {
+      throw new CustomError("Can't find todo with this id.", 400);
+    }
+
+    res.json(rest);
+  } catch (err) {
+    next(err);
+  }
 };
 
 module.exports = { retrieveTodos, retrieveSingleTodo, createTodo };
