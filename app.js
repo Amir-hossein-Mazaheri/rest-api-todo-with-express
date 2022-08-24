@@ -1,6 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
+const helmet = require("helmet");
+const xssClean = require("xss-clean");
+const morgan = require("morgan");
+const mongoSanitize = require("express-mongo-sanitize");
 
 const todoRoutes = require("./routes/todo");
 const userRoutes = require("./routes/user");
@@ -13,7 +17,14 @@ const app = express();
 
 app.disable("x-powered-by");
 
+// third party middlewares
 app.use(bodyParser.json());
+app.use(helmet());
+app.use(xssClean());
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms")
+);
+app.use(mongoSanitize());
 
 // helpers middlewares
 app.use(disableCORS);
