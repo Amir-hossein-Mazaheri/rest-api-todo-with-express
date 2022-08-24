@@ -5,10 +5,18 @@ const TODOS_PER_PAGE = 10;
 
 const retrieveTodos = async (req, res, next) => {
   const page = Number(req.query.page) || 1;
-  const { _id: userId } = req.user;
+  const { user } = req;
 
   try {
-    const todosCount = await Todo.countDocuments({ userId });
+    const query = {
+      $or: [
+        { isPrivate: false },
+        { isPrivate: { $exists: false } },
+        { isPrivate: true, userId: user },
+      ],
+    };
+
+    const todosCount = await Todo.countDocuments(query);
     const totalPages = Math.ceil(todosCount / TODOS_PER_PAGE);
     const hasNext = page * TODOS_PER_PAGE <= todosCount;
     const hasPrev = page > 1;
@@ -17,7 +25,7 @@ const retrieveTodos = async (req, res, next) => {
       throw new CustomError("This page index doesn't exists.", 400);
     }
 
-    const todos = await Todo.find({ userId })
+    const todos = await Todo.find(query)
       .sort({ _id: -1 }) // reverse the order of todos
       .skip(TODOS_PER_PAGE * (page - 1))
       .limit(TODOS_PER_PAGE)
@@ -67,12 +75,23 @@ const createTodo = async (req, res, next) => {
 };
 
 const retrieveSingleTodo = async (req, res, next) => {
-  const { todoId } = req.params;
+  const {
+    params: { todoId },
+    user,
+  } = req;
 
   try {
-    const todo = await Todo.findById(todoId)
+    const todo = await Todo.findOne({
+      _id: todoId,
+      $or: [
+        { isPrivate: false },
+        { isPrivate: { $exists: false } },
+        { isPrivate: true, userId: user },
+      ],
+    })
       .select("_id title description isDone isRemoved creationDate")
       .populate("userId", "firstname lastname email");
+
     const { isRemoved, ...rest } = todo._doc;
 
     if (isRemoved) {
@@ -85,4 +104,38 @@ const retrieveSingleTodo = async (req, res, next) => {
   }
 };
 
-module.exports = { retrieveTodos, retrieveSingleTodo, createTodo };
+const replaceSingleTodo = async (req, res, next) => {
+  const { title, description, isDone } = req.body;
+  const { todoId } = req.params;
+
+  try {
+    const todo = await Todo.findById(todoId).exec();
+
+    if (todo.userId.toString() !== req.user._id.toString()) {
+      throw new CustomError("Couldn't find todo with this id");
+    }
+
+    const result = await Todo.findByIdAndUpdate(todoId, {
+      title,
+      description,
+      isDone,
+    }).select("-isRemoved -__v -userId");
+
+    res.json({
+      message: "updated successfully",
+      todo: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateSingleTodo = async (req, res, next) => {};
+
+module.exports = {
+  retrieveTodos,
+  retrieveSingleTodo,
+  createTodo,
+  replaceSingleTodo,
+  updateSingleTodo,
+};
