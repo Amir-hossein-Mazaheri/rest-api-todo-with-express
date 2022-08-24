@@ -1,7 +1,7 @@
 const CustomError = require("../utils/CustomError");
 
 const userAuth = (req, res, next) => {
-  if (!req.user) {
+  if (!req.isAuthenticated) {
     throw new CustomError("Not Authenticated", 401);
   }
 

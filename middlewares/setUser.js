@@ -21,7 +21,9 @@ const setUser = async (req, res, next) => {
     );
 
     req.user = await User.findById(userId).select("-password -__v");
+    req.isAuthenticated = true;
   } catch (err) {
+    req.isAuthenticated = false;
     next(err);
   }
 
