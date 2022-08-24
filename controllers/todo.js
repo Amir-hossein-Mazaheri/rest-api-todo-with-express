@@ -5,21 +5,24 @@ const TODOS_PER_PAGE = 10;
 
 const retrieveTodos = async (req, res, next) => {
   const page = Number(req.query.page) || 1;
+  const { _id: userId } = req.user;
 
   try {
-    const todosCount = await Todo.countDocuments();
+    const todosCount = await Todo.countDocuments({ userId });
     const totalPages = Math.ceil(todosCount / TODOS_PER_PAGE);
     const hasNext = page * TODOS_PER_PAGE <= todosCount;
-    const hasPrev = page !== 1;
+    const hasPrev = page > 1;
 
     if (page > totalPages) {
       throw new CustomError("This page index doesn't exists.", 400);
     }
 
-    const todos = await Todo.find()
+    const todos = await Todo.find({ userId })
       .sort({ _id: -1 }) // reverse the order of todos
       .skip(TODOS_PER_PAGE * (page - 1))
-      .limit(TODOS_PER_PAGE);
+      .limit(TODOS_PER_PAGE)
+      .select("-isRemoved -__v")
+      .populate("userId", "firstname lastname email");
 
     // generates next or prev page url
     const generateLink = (isPrev) =>
@@ -51,7 +54,7 @@ const createTodo = async (req, res, next) => {
       description,
       isDone,
       isRemoved,
-      userId: "62f665ad151dd7519adedcca",
+      userId: req.user, // mongoose can detect id of req.user
     });
 
     res.status(201).json({
@@ -67,13 +70,13 @@ const retrieveSingleTodo = async (req, res, next) => {
   const { todoId } = req.params;
 
   try {
-    const todo = await Todo.findById(todoId).select(
-      "_id title description isDone isRemoved creationDate"
-    );
+    const todo = await Todo.findById(todoId)
+      .select("_id title description isDone isRemoved creationDate")
+      .populate("userId", "firstname lastname email");
     const { isRemoved, ...rest } = todo._doc;
 
     if (isRemoved) {
-      throw new CustomError("Can't find todo with this id.", 400);
+      throw new CustomError("Can't find todo with this id.", 404);
     }
 
     res.json(rest);

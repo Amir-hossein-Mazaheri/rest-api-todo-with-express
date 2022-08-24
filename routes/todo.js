@@ -5,8 +5,11 @@ const {
   retrieveSingleTodo,
   createTodo,
 } = require("../controllers/todo");
+const { userAuth } = require("../middlewares/userAuth");
 
 const router = express.Router();
+
+router.use(userAuth);
 
 router.get("/", retrieveTodos);
 
