@@ -14,6 +14,10 @@ const todoSchema = new Schema(
       type: Boolean,
       required: true,
     },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
     isRemoved: {
       type: Boolean,
       required: true,
