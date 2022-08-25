@@ -1,5 +1,5 @@
 {
-  "name": "rest_api",
+  "name": "todo_rest_api",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -23,6 +23,7 @@
     "mongoose": "^6.5.2",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.7.8",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
