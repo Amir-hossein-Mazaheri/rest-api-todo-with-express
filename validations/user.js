@@ -37,4 +37,13 @@ const validateSignUp = [
 
 const validateSignIn = [email, password];
 
-module.exports = { validateSignUp, validateSignIn };
+const validateCreateResetToken = [email];
+
+const validateResetPassword = [password];
+
+module.exports = {
+  validateSignUp,
+  validateSignIn,
+  validateCreateResetToken,
+  validateResetPassword,
+};

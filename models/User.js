@@ -18,6 +18,10 @@ const userSchema = new Schema({
     required: true,
     unique: true,
   },
+  reset: {
+    key: { type: String, default: "" },
+    exp: { type: Date, default: null },
+  },
 });
 
 const User = model("User", userSchema);
